@@ -1,41 +1,109 @@
-# ioput.class.php-update
-ioput.class.php升级版
+# IOHandler Class
 
-由**小祸**使用ChatGPT o1进行改进。
+`IOHandler` 类是一个用于处理 HTTP 输入和输出的简单 PHP 类。它可以清理和验证输入数据，并以 JSON 格式输出响应。该类支持对 GET 和 POST 请求的处理，确保数据的安全性和有效性。
+
+## 特性
+
+- **数据清理**：自动清理和验证输入数据，支持字符串、整数和浮点数类型。
+- **错误处理**：支持错误消息的收集与处理，方便调试。
+- **JSON 输出**：可以方便地初始化 JSON 输出结构，并发送响应。
+- **可扩展性**：类的设计易于扩展，可以根据需要添加更多功能。
+
+## 安装
+
+将 `IOHandler` 类文件添加到您的 PHP 项目中，确保您可以正确引用该文件。
+
+```php
+require_once 'IOHandler.php';
+```
+
+## 用法示例
+
+以下是如何使用 `IOHandler` 类的示例：
+
+```php
+<?php
+// 初始化 IOHandler 类以处理 POST 数据
+$io = new IOHandler('post');
+
+// 初始化 JSON 输出
+$io->initializeJsonOutput('success', true);
+
+// 获取和验证输入
+$username = $io->getInput('username', 'string');
+$age = $io->getInput('age', 'int');
+$salary = $io->getInput('salary', 'float');
+
+// 检查是否有任何错误
+if (!$io->canContinue()) {
+    $io->sendOutput();
+    exit;
+}
+
+// 处理业务逻辑
+// ...
+
+// 如果成功
+$io->markSuccess("数据处理成功。");
+$io->sendOutput();
+```
 
 
-### 详细改进
+```javascript
+ajax(someoption).then((response)=>{
+    if(response.success){
+        console.log("success")
+    }else{
+        console.log("response.error");
+    }
+})
+```
 
-1. **类重命名和结构**：
-   - **旧名称**：`ioput`
-   - **新名称**：`IOHandler`
-   - **原因**：更具描述性，并遵循 PHP 命名约定。
+## 方法说明
 
-2. **超级全局变量封装**：
-   - 构造函数接受方法（`'post'` 或 `'get'`），并相应地初始化 `$data` 属性。这避免了在类中直接操作 `$_POST` 和 `$_GET`。
+### `__construct($method)`
 
-3. **统一输入检索和验证**：
-   - `getInput` 方法替代了 `inputcheck` 和单独的 `postre`/`getre` 方法。
-   - 使用 PHP 的 `filter_var` 进行强有力的验证。
-   - 在 `sanitizeString` 中单独处理清理过程，以增强清晰性和可重用性。
+构造函数，初始化输入数据。
 
-4. **错误处理**：
-   - 引入 `$errors` 数组以收集错误消息。
-   - `checkError` 方法允许添加错误并可选地终止执行。
-   - `finalizeOutput` 方法确保在发送 JSON 响应前，任何收集到的错误都会被包含在内。
+- **参数**:
+  - `$method` (string): 请求的方法（'post' 或 'get'）。默认值为 'post'。
 
-5. **一致的命名约定**：
-   - 方法名称现在采用 `camelCase`，例如 `getInput`、`addError`、`canContinue` 等。
-   - 属性也采用 `camelCase` 以保持一致性。
+### `getInput($key, $type)`
 
-6. **改进 JSON 输出处理**：
-   - `initializeJsonOutput` 方法设置 JSON 响应的初始结构。
-   - `sendOutput` 方法确保在未发送头信息的情况下才发送头。
-   - `finalizeOutput` 方法在发送之前将错误附加到响应中（如果存在）。
+获取并清理输入值。
 
-7. **移除冗余或冲突的方法/属性**：
-   - 移除了冲突的 `allowcontinue` 方法，并适当地管理了 `$allowContinue` 属性。
-   - 通过去除不必要的重复简化了类。
+- **参数**:
+  - `$key` (string): 输入的键。
+  - `$type` (string): 预期的数据类型（'int', 'float', 'string'）。
+- **返回**: 清理后的值，如果无效则返回 `null`。
 
-8. **使用 PHP 内置函数提高安全性**：
-   - 使用 `htmlspecialchars` 并采用适当的标志以防止 XSS 攻击。
+### `checkError($message, $die)`
+
+添加错误消息并在必要时停止执行。
+
+- **参数**:
+  - `$message` (string): 错误消息。
+  - `$die` (bool): 是否终止脚本。默认值为 `false`。
+
+### `initializeJsonOutput($state, $hasNotice)`
+
+初始化 JSON 输出结构。
+
+- **参数**:
+  - `$state` (string): 初始状态（'success' 或 'state'）。
+  - `$hasNotice` (bool): 是否包含通知字段。默认值为 `true`。
+
+### `markSuccess($message)`
+
+将操作标记为成功并可选地添加消息。
+
+- **参数**:
+  - `$message` (string): 成功消息。
+
+### `sendOutput()`
+
+发送 JSON 输出并终止脚本。
+
+## 许可证
+
+MIT许可证
